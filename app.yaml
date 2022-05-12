@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bar-service
+spec:
+  ports:
+  - port: 8080
+  selector:
+    app: bar
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bar
+  name: bar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bar
+  template:
+    metadata:
+      labels:
+        app: bar
+    spec:
+      containers:
+      - env:
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName
+        image: us-central1-docker.pkg.dev/sp1-21-gateway/gitops-demo/bar@sha256:49ec1fdf32cf26373f98f732c3d43f570331e86b5f476565a5c73ca2cb8670a9
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 2
+          timeoutSeconds: 10
+        name: bar
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 2
+          timeoutSeconds: 11
+        resources:
+          limits:
+            memory: 768Mi
+      imagePullSecrets:
+      - name: artifact-registry
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bar-ingress
+spec:
+  defaultBackend:
+    service:
+      name: bar-service
+      port:
+        number: 8080
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: bar-service
+            port:
+              number: 8080
+        path: /bar
+        pathType: Prefix
