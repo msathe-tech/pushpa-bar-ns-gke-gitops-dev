@@ -50,7 +50,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.serviceAccountName
-        image: us-central1-docker.pkg.dev/demo2-july8/pushpa/bar@sha256:3bc1586411a94594b1d8f252b1ae410f14f39a7543029712de46eef91d06b5ec
+        image: us-central1-docker.pkg.dev/demo2-july8/pushpa/bar@sha256:70c1ff51e2c87eba6b8c5c29e719a9e8b2a6dbca1aba7e28c66b14961f14a322
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
